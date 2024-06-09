@@ -1,3 +1,7 @@
-__all__ = ("Base",)
+__all__ = (
+    "Base",
+    "Paste",
+)
 
 from .base import Base
+from .paste import Paste
