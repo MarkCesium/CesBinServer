@@ -14,6 +14,7 @@ async def get_paste(
     id: str,
     session: AsyncSession = Depends(db_helper.session_dependency),
 ) -> schemas.Paste:
+    # TODO: Extract it in depenency
     paste = await crud.get_paste(session, id)
     if paste is not None:
         return paste
@@ -21,7 +22,7 @@ async def get_paste(
 
 
 @router.post("/")
-async def get_paste(
+async def create_paste(
     data: schemas.PasteCreate,
     session: AsyncSession = Depends(db_helper.session_dependency),
 ) -> schemas.Paste:
