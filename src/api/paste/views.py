@@ -1,32 +1,28 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from . import crud, schemas
+from .dependency import get_paste_dependency
 from src.core.db_helper import db_helper
 from src.core.models import Paste
-from uuid import uuid4
-from time import time
 
 router = APIRouter(prefix="/paste", tags=["Paste"])
 
 
-@router.get("/{id}")
-async def get_paste(
-    id: str,
+@router.get("/", status_code=status.HTTP_200_OK)
+async def get_paste_list(
     session: AsyncSession = Depends(db_helper.session_dependency),
-) -> schemas.Paste:
-    # TODO: Extract it in depenency
-    paste = await crud.get_paste(session, id)
-    if paste is not None:
-        return paste
-    raise HTTPException(status.HTTP_404_NOT_FOUND)
+) -> list[schemas.PasteRead]:
+    return await crud.get_paste_list(session)
 
 
-@router.post("/")
+@router.get("/{id}", status_code=status.HTTP_200_OK)
+async def get_paste(paste: Paste = Depends(get_paste_dependency)) -> schemas.PasteRead:
+    return paste
+
+
+@router.post("/", status_code=status.HTTP_201_CREATED)
 async def create_paste(
-    data: schemas.PasteCreate,
+    paste: schemas.PasteCreate,
     session: AsyncSession = Depends(db_helper.session_dependency),
-) -> schemas.Paste:
-    return await crud.create_paste(
-        session,
-        Paste(**data.model_dump(), id=str(uuid4()), created_at=round(time() * 1000)),
-    )
+) -> schemas.PasteRead:
+    return await crud.create_paste(session, paste)
