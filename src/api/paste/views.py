@@ -8,15 +8,10 @@ from src.core.models import Paste
 router = APIRouter(prefix="/paste", tags=["Paste"])
 
 
-@router.get("/", status_code=status.HTTP_200_OK)
-async def get_paste_list(
-    session: AsyncSession = Depends(db_helper.session_dependency),
-) -> list[schemas.PasteRead]:
-    return await crud.get_paste_list(session)
-
-
 @router.get("/{id}", status_code=status.HTTP_200_OK)
-async def get_paste(paste: Paste = Depends(get_paste_dependency)) -> schemas.PasteRead:
+async def get_paste(
+    paste: schemas.PasteRead = Depends(get_paste_dependency),
+) -> schemas.PasteRead:
     return paste
 
 
