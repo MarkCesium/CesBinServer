@@ -4,7 +4,6 @@ from sqlalchemy import select
 from src.core.models import Paste
 from src.core.config import BASE_DIR
 from . import schemas
-from uuid import uuid4
 from time import time
 from src.services.files import create_paste_file, get_paste_from_file
 
@@ -17,7 +16,7 @@ async def get_paste_list(session: AsyncSession) -> list[Paste]:
     return result.scalars().all()
 
 
-async def get_paste(session: AsyncSession, id: str) -> schemas.PasteRead | None:
+async def get_paste(session: AsyncSession, id: int) -> schemas.PasteRead | None:
     paste = await session.get(Paste, id)
     if paste is None:
         return None
@@ -32,10 +31,8 @@ async def get_paste(session: AsyncSession, id: str) -> schemas.PasteRead | None:
 async def create_paste(
     session: AsyncSession, paste: schemas.PasteCreate
 ) -> schemas.PasteRead:
-    id = str(uuid4())
     path = BASE_DIR / "pastes" / f"{id}.txt"
     entity = Paste(
-        id=id,
         paste_path=str(path),
         created_at=round(time() * 1000),
         expire_at=paste.expire_at,
