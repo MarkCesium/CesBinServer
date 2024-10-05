@@ -3,6 +3,7 @@ from enum import Enum
 
 
 class Period(str, Enum):
+    # TODO: Rewrite! Get Periods from DataBase
     one_hour = "1 hour"
     three_hours = "3 hours"
     one_day = "1 day"

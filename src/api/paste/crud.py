@@ -31,6 +31,8 @@ async def get_paste(session: AsyncSession, id: int) -> schemas.PasteRead | None:
 async def create_paste(
     session: AsyncSession, paste: schemas.PasteCreate
 ) -> schemas.PasteRead:
+    # Do NOT use it
+    # TODO: Rewrite this function with Period model
     path = BASE_DIR / "pastes" / f"{id}.txt"
     entity = Paste(
         paste_path=str(path),
