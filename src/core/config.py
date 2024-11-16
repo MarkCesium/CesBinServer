@@ -12,6 +12,10 @@ class Settings(BaseSettings):
     db_name: str
     db_echo: bool = False
 
+    class Config:
+        env_file = BASE_DIR / ".env"
+        env_file_encoding = "utf-8"
+
 
 settings = Settings()
 settings.db_url = f"postgresql+asyncpg://{settings.db_user}:{settings.db_pass}@{settings.db_host}/{settings.db_name}"
