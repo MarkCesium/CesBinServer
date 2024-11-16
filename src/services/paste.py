@@ -7,7 +7,6 @@ from src.services.files import FileService
 from src.core.models import Paste, Period
 from src.core.repositories import PeriodRepository
 from src.core.config import BASE_DIR
-from src.core.exceptions.paste import PasteCreateError
 
 
 class PasteService:
@@ -29,7 +28,7 @@ class PasteService:
 
         try:
             await FileService.create(str(BASE_DIR / path), text)
-        except Exception as e:
+        except Exception:
             await session.close()
             raise HTTPException(status.HTTP_400_BAD_REQUEST)
 

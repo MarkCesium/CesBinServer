@@ -1,7 +1,6 @@
 from fastapi import APIRouter, Depends, status
 from fastapi.exceptions import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
-from time import time
 
 from . import schemas
 from src.core.config import BASE_DIR
