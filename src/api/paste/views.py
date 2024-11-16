@@ -1,13 +1,9 @@
 from fastapi import APIRouter, Depends, status
-from fastapi.exceptions import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from . import schemas
-from src.core.config import BASE_DIR
 from src.core.db_helper import db_helper
-from src.core.repositories import PasteRepository, FormatRepository
-from src.core.models import Paste, Format
-from src.services import PasteService, FileService
+from src.services import PasteService
 
 router = APIRouter(prefix="/paste", tags=["Paste"])
 
