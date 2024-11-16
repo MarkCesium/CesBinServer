@@ -1,59 +1,13 @@
 services:
-  # redis_db:
-  #   networks: 
-  #     - cesbin
-  #   image: redis:alpine
-  #   ports:
-  #     - 6379:6379
-
-  cesbin-database:
-    networks: 
-        - cesbin-network
-    env_file: .env
-    image: "postgres:13.3-alpine"
-    container_name: cesbin-database
-    environment:
-      POSTGRES_USER: "${DB_USER}"
-      POSTGRES_PASSWORD: "${DB_PASS}"
-      POSTGRES_DB: "${DB_NAME}"
-      POSTGRES_HOST_AUTH_METHOD: trust
-    ports:
-      - "5432:5432"
-    restart: always
-
   cesbin-server:
     container_name: cesbin-server
-    networks: 
-        - cesbin-network
     build:
       context: .
-      dockerfile: ./docker/Dockerfile
+      dockerfile: ./Dockerfile
     volumes:
       - ./src:/project/src
-      - ./migrations:/project/migrations
+      - ./pastes:/project/pastes
     env_file:
       - .env
-    depends_on:
-      - cesbin-database
-    #   - redis_db
-    expose: 
-      - '8000'
-  
-  
-  cesbin-nginx:
-    image: nginx:latest
-    container_name: cesbin-nginx
-    networks:
-      - cesbin-network
-    depends_on:
-      - cesbin-server
-      - cesbin-database
     ports:
-      - '80:80'
-    volumes:
-      - ./docker/nginx:/etc/nginx/conf.d
-    restart: always
-
-networks:
-  cesbin-network:
-    driver: bridge
+      - "8000:8000"
