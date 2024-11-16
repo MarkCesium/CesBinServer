@@ -16,7 +16,7 @@ class BaseRepository:
     @classmethod
     async def get_one_or_none(cls, session: AsyncSession, **filter_by):
         query = Select(cls.model).filter_by(**filter_by)
-        result: Result = session.execute(query)
+        result: Result = await session.execute(query)
         return result.scalar_one_or_none()
 
     @classmethod
