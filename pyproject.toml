@@ -17,6 +17,7 @@ aiofile = "^3.8.8"
 greenlet = "^3.1.1"
 asyncpg = "^0.29.0"
 hypercorn = "^0.17.3"
+celery = "^5.4.0"
 
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.4.8"
