@@ -4,10 +4,35 @@ services:
     build:
       context: .
       dockerfile: ./Dockerfile
-    volumes:
-      - ./src:/project/src
-      - ./pastes:/project/pastes
     env_file:
       - .env
+    volumes:
+      - ./pastes:/project/pastes
     ports:
-      - "8000:8000"
+      - 80:8000
+
+  cesbin-rabbitmq:
+    container_name: cesbin-rabbitmq
+    image: rabbitmq:3.10.7-management
+    hostname: rabbitmq
+    restart: always
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
+    volumes:
+      - ./var/rabbitmq:/var/lib/rabbitmq
+    ports:
+      - 15672:15672
+      - 5672:5672
+  
+  cesbin-celery:
+    container_name: cesbin-celery
+    build:
+      context: .
+    env_file:
+      - .env
+    depends_on:
+      - cesbin-rabbitmq
+    volumes:
+      - ./pastes:/project/pastes
+    command: ["poetry", "run", "celery", "--app=src.tasks.celery:celery_app", "worker", "-l", "INFO"]
