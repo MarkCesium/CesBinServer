@@ -1,3 +1,5 @@
+default: docker-build docker-run;
+
 docker-build:
 	docker compose build
 

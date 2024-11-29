@@ -16,8 +16,10 @@ alembic = "^1.13.1"
 aiofile = "^3.8.8"
 greenlet = "^3.1.1"
 asyncpg = "^0.29.0"
-hypercorn = "^0.17.3"
 celery = "^5.4.0"
+uvicorn = "^0.32.1"
+pyamqp = "^0.1.0.7"
+psycopg = {extras = ["binary"], version = "^3.2.3"}
 
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.4.8"
