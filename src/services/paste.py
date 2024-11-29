@@ -5,8 +5,13 @@ from time import time
 
 from src.services.files import FileService
 from src.core.models import Paste, Period, Format
-from src.core.repositories import PeriodRepository, FormatRepository, PasteRepository
+from src.core.repositories import (
+    PeriodRepository,
+    FormatRepository,
+    PasteRepository,
+)
 from src.core.config import BASE_DIR
+from src.tasks.tasks import delete_paste
 
 
 class PasteService:
@@ -50,6 +55,9 @@ class PasteService:
             raise HTTPException(status.HTTP_400_BAD_REQUEST)
 
         await session.commit()
+
+        if paste.expire_at is not None:
+            delete_paste.apply_async((paste.id,), eta=paste.expire_at)
 
         return paste.id
 
