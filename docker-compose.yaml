@@ -26,6 +26,7 @@ services:
       POSTGRES_USER: "${DATABASE__USER}"
       POSTGRES_PASSWORD: "${DATABASE__PASSWORD}"
       PGDATA: "/var/lib/postgresql/data/pgdata"
+      POSTGRES_HOST_AUTH_METHOD: trust      
     volumes:
       - ./var/postgres:/var/lib/postgresql/data
     ports:
