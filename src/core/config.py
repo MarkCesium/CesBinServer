@@ -1,29 +1,43 @@
 from pydantic_settings import BaseSettings
+from pydantic import BaseModel, PostgresDsn, RedisDsn
 from pathlib import Path
 
 BASE_DIR = Path(__file__).parent.parent.parent
 
+class PostgresConfig(BaseModel):
+    url: PostgresDsn
+    sync_url: PostgresDsn
+    user: str
+    password: str
+    host: str
+    name: str
+    echo: bool = False
+    echo_pool: bool = False
+    pool_size: int = 50
+    max_overflow: int = 10    
+
+class RedisConfig(BaseModel):
+    url: RedisDsn
+    host: str
+    user: str
+    password: str
+    user_password: str
+
+class RabbitmqConfig(BaseModel):
+    url: str
+    host: str
+    user: str
+    password: str
 
 class Settings(BaseSettings):
-    db_url: str | None = None
-    db_sync_url: str | None = None
-    db_user: str
-    db_password: str
-    db_host: str
-    db_name: str
-    db_echo: bool = False
-
-    rabbitmq_url: str | None = None
-    rabbitmq_host: str
-    rabbitmq_user: str
-    rabbitmq_password: str
+    database: PostgresConfig
+    redis: RedisConfig
+    rabbitmq: RabbitmqConfig
 
     class Config:
         env_file = BASE_DIR / ".env"
         env_file_encoding = "utf-8"
+        env_nested_delimiter = "__"
 
 
 settings = Settings()
-settings.db_url = f"postgresql+asyncpg://{settings.db_user}:{settings.db_password}@{settings.db_host}/{settings.db_name}"
-settings.db_sync_url = f"postgresql+psycopg://{settings.db_user}:{settings.db_password}@{settings.db_host}/{settings.db_name}"
-settings.rabbitmq_url = f"pyamqp://{settings.rabbitmq_user}:{settings.rabbitmq_password}@{settings.rabbitmq_host}"

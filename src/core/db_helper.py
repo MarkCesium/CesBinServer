@@ -41,4 +41,4 @@ class DataBaseHelper:
             yield session
 
 
-db_helper = DataBaseHelper(settings.db_url, settings.db_echo)
+db_helper = DataBaseHelper(str(settings.database.url), str(settings.database.sync_url), settings.database.echo)
