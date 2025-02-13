@@ -1,5 +1,5 @@
+from sqlalchemy import Result, Select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import Select, Result
 from sqlalchemy.orm import Session
 
 

@@ -1,17 +1,20 @@
-from sqlalchemy.ext.asyncio import AsyncSession
-from fastapi.exceptions import HTTPException
-from fastapi import status
 from time import time
 
-from src.services.files import FileService
-from src.core.models import Paste, Period, Format
+from fastapi import status
+from fastapi.exceptions import HTTPException
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from src.core.config import BASE_DIR
+from src.core.db_helper import db_helper
+from src.core.models import Format, Paste, Period
 from src.core.repositories import (
-    PeriodRepository,
     FormatRepository,
     PasteRepository,
+    PasteSyncRepository,
+    PeriodRepository,
 )
-from src.core.config import BASE_DIR
-from src.tasks.tasks import delete_paste
+from src.services.files import FileService
+from src.tasks.celery import celery_app
 
 
 class PasteService:

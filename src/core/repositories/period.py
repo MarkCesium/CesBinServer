@@ -1,5 +1,6 @@
-from .base import BaseRepository
 from src.core.models import Period
+
+from .base import BaseRepository
 
 
 class PeriodRepository(BaseRepository):

@@ -1,10 +1,11 @@
-from pydantic import BaseModel, Field
 from datetime import datetime
+
+from pydantic import BaseModel, Field
 
 
 class PasteCreate(BaseModel):
     text: str
-    period: str | None = Field(default=None, min_length=5, max_length=20)
+    period: str | None = Field(default=None, min_length=3, max_length=20)
     format: str | None = Field(default="plain", min_length=2, max_length=20)
 
 

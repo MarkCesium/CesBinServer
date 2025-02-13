@@ -1,8 +1,7 @@
 from .base import Base
+from .format import Format
 from .paste import Paste
 from .period import Period
-from .format import Format
-
 
 __all__ = (
     "Base",
