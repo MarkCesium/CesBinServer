@@ -1,13 +1,19 @@
-default: docker-build docker-run;
+default: build run;
 
-docker-build:
+build:
 	docker compose build
 
-docker-run:
+run:
 	docker compose up
 
-migration-migrate:
+exec:
+	docker exec -it '${container}' sh
+
+migrate:
 	alembic upgrade head
 
-migration-create:
+migration:
 	alembic revision --autogenerate -m '${msg}'
+
+format:
+	ruff check --fix
