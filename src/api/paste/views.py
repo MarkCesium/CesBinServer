@@ -22,6 +22,6 @@ async def create_paste(
     paste: schemas.PasteCreate,
     session: AsyncSession = Depends(db_helper.async_session_dependency),
 ) -> schemas.PasteRead:
-    id = await PasteService.create(session, paste.text, paste.format, paste.period)
+    paste = await PasteService.create(session, paste.text, paste.format, paste.period)
 
-    return await PasteService.get(session, id)
+    return await PasteService.get(session, paste.id)
