@@ -1,9 +1,28 @@
+import logging
 from pathlib import Path
+from typing import Literal
 
 from pydantic import BaseModel, PostgresDsn, RedisDsn
 from pydantic_settings import BaseSettings
 
 BASE_DIR = Path(__file__).parent.parent.parent
+LOG_DEFAULT_FORMAT = "[%(asctime)s.%(msecs)03d] %(module)10s:%(lineno)-3d %(levelname)-7s - %(message)s"
+LOG_DATE_FORMAT = "%Y-%m-%d %H:%M:%S"
+
+class LoggingConfig(BaseModel):
+    log_level: Literal[
+        'debug',
+        'info',
+        'warning',
+        'error',
+        'critical',
+    ] = 'info'
+    log_format: str = LOG_DEFAULT_FORMAT
+    log_date_format: str = LOG_DATE_FORMAT
+    
+    @property
+    def log_level_value(self) -> int:
+        return logging.getLevelNamesMapping()[self.log_level.upper()]
 
 class PostgresConfig(BaseModel):
     url: PostgresDsn
@@ -35,6 +54,7 @@ class RabbitmqConfig(BaseModel):
     password: str
 
 class Settings(BaseSettings):
+    logging: LoggingConfig = LoggingConfig()
     database: PostgresConfig
     redis: RedisConfig
     rabbitmq: RabbitmqConfig
@@ -46,3 +66,10 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
+
+def configure_logging() -> None:
+    logging.basicConfig(
+        level=settings.logging.log_level_value,
+        format=settings.logging.log_format,
+        datefmt=settings.logging.log_date_format,
+    )
