@@ -7,4 +7,4 @@ from .base import Base
 class Format(Base):
     __tablename__ = "formats"
     name: Mapped[str] = mapped_column(String(20), nullable=False, unique=True)
-    pastes = relationship("pastes", back_populates="format")
+    pastes = relationship("Paste", back_populates="format")
