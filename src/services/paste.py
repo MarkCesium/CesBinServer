@@ -1,11 +1,12 @@
 from datetime import datetime, timezone
 from time import time
+import logging
 
 from fastapi import status
 from fastapi.exceptions import HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from src.core.config import BASE_DIR
+from src.core.config import BASE_DIR, configure_logging
 from src.core.db_helper import db_helper
 from src.core.models import Format, Paste, Period
 from src.core.repositories import (
@@ -17,6 +18,8 @@ from src.core.repositories import (
 from src.services.files import FileService
 from src.tasks.celery import celery_app
 
+logger = logging.getLogger(__name__)
+configure_logging()
 
 class PasteService:
     @classmethod
@@ -62,6 +65,9 @@ class PasteService:
         if paste.expire_at is not None:
             delete_paste.apply_async((paste.id,), eta=paste.expire_at)
 
+        if logger.isEnabledFor(logging.DEBUG):
+            logger.debug("Created at: %s, expire at: %s", paste.created_at, paste.expire_at)
+        
         return paste
 
     @classmethod
