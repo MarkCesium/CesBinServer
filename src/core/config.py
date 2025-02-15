@@ -15,7 +15,11 @@ class PostgresConfig(BaseModel):
     echo: bool = False
     echo_pool: bool = False
     pool_size: int = 50
-    max_overflow: int = 10    
+    max_overflow: int = 10
+    
+    @property
+    def migrations_url(self) -> str:
+        return f"postgresql+asyncpg://{self.user}:{self.password}@{self.host}/{self.name}"    
 
 class RedisConfig(BaseModel):
     url: RedisDsn
