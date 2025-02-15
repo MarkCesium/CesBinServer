@@ -1,5 +1,10 @@
-from .paste import PasteRepository
-from .period import PeriodRepository
 from .format import FormatRepository
+from .paste import PasteRepository, PasteSyncRepository
+from .period import PeriodRepository
 
-__all__ = ("PasteRepository", "PeriodRepository", "FormatRepository")
+__all__ = (
+    "PasteRepository",
+    "PasteSyncRepository",
+    "PeriodRepository",
+    "FormatRepository",
+)

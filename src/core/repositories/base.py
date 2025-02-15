@@ -1,5 +1,6 @@
+from sqlalchemy import Result, Select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import Select, Result
+from sqlalchemy.orm import Session
 
 
 class BaseRepository:
@@ -24,3 +25,21 @@ class BaseRepository:
         entity = cls.model(**data)
         session.add(entity)
         await session.commit()
+
+
+class BaseSyncRepository:
+    model = None
+
+    @classmethod
+    def get_by_id(cls, session: Session, id: int):
+        return session.get(cls.model, id)
+
+    @classmethod
+    def get_all(cls, session: Session, **filter_by):
+        return session.query(cls.model).filter_by(**filter_by)
+
+    @classmethod
+    def get_one_or_none(cls, session: Session, **filter_by):
+        query = Select(cls.model).filter_by(**filter_by)
+        result: Result = session.execute(query)
+        return result.scalar_one_or_none()

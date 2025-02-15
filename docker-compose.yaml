@@ -1,13 +1,102 @@
 services:
   cesbin-server:
+    networks:
+      - cesbin-network
     container_name: cesbin-server
+    environment:
+      TZ: UTC
     build:
       context: .
       dockerfile: ./Dockerfile
-    volumes:
-      - ./src:/project/src
-      - ./pastes:/project/pastes
     env_file:
       - .env
+    depends_on:
+      - cesbin-postgres
+      - cesbin-rabbitmq
+    volumes:
+      - ./pastes:/project/pastes
     ports:
-      - "8000:8000"
+      - 80:8000
+  
+  cesbin-postgres:
+    networks:
+      - cesbin-network
+    container_name: cesbin-postgres
+    image: "postgres:13-alpine"
+    environment:  
+      POSTGRES_DB: "${DATABASE__NAME}"
+      POSTGRES_USER: "${DATABASE__USER}"
+      POSTGRES_PASSWORD: "${DATABASE__PASSWORD}"
+      PGDATA: "/var/lib/postgresql/data/pgdata"
+      POSTGRES_HOST_AUTH_METHOD: trust
+      TZ: UTC
+    volumes:
+      - ./var/postgres:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DATABASE__USER} -d ${DATABASE__NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+  
+  # cesbin-redis:
+  #   container_name: cesbin-redis
+  #   image: redis:alpine
+  #   environment:
+  #     REDIS_PASSWORD: ${REDIS_PASSWORD}
+  #     REDIS_USER: ${REDIS_USER}
+  #     REDIS_USER_PASSWORD: ${REDIS_USER_PASSWORD}
+  #   volumes:
+  #     - ./var/redis:/data
+  #   ports:
+  #     - 6379:6379
+  #   command: >
+  #     sh -c '
+  #       mkdir -p /usr/local/etc/redis &&
+  #       echo "bind 0.0.0.0" > /usr/local/etc/redis/redis.conf &&
+  #       echo "requirepass $REDIS_PASSWORD" >> /usr/local/etc/redis/redis.conf &&
+  #       echo "appendonly yes" >> /usr/local/etc/redis/redis.conf &&
+  #       echo "appendfsync everysec" >> /usr/local/etc/redis/redis.conf &&
+  #       echo "user default on nopass ~* +@all" > /usr/local/etc/redis/users.acl &&
+  #       echo "user $REDIS_USER on >$REDIS_USER_PASSWORD ~* +@all" >> /usr/local/etc/redis/users.acl &&
+  #       redis-server /usr/local/etc/redis/redis.conf --aclfile /usr/local/etc/redis/users.acl
+  #     '
+
+  cesbin-rabbitmq:
+    networks:
+      - cesbin-network
+    container_name: cesbin-rabbitmq
+    image: rabbitmq:3.10.7-management
+    restart: always
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ__USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ__PASSWORD}
+      TZ: UTC
+    volumes:
+      - ./var/rabbitmq:/var/lib/rabbitmq
+    ports:
+      - 15672:15672
+      - 5672:5672
+  
+  cesbin-celery:
+    networks:
+      - cesbin-network
+    container_name: cesbin-celery
+    build:
+      context: .
+    env_file:
+      - .env
+    depends_on:
+      - cesbin-postgres
+      - cesbin-rabbitmq
+    environment:
+      TZ: UTC
+    volumes:
+      - ./pastes:/project/pastes
+    command: ["poetry", "run", "celery", "--app=src.tasks.celery:celery_app", "worker", "-l", "INFO"]
+
+networks:
+  cesbin-network:
+    driver: bridge

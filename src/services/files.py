@@ -1,3 +1,5 @@
+import os
+
 from aiofile import async_open
 
 
@@ -12,3 +14,7 @@ class FileService:
         async with async_open(path, "wb") as file:
             await file.write(text.encode())
             file.seek(0)
+
+    @classmethod
+    def delete(cls, path: str) -> None:
+        os.remove(path)
