@@ -2,7 +2,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
-from src.api import paste_router
+from src.api import format_router, paste_router
 from src.core.config import settings
 from src.core.db_helper import db_helper
 
@@ -23,6 +23,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(lifespan=lifespan)
 app.include_router(paste_router)
+app.include_router(format_router)
 
 
 @app.get("/")
