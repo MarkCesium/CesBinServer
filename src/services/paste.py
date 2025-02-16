@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime, timezone
 from time import time
 
@@ -17,6 +18,7 @@ from src.core.repositories import (
 from src.services.files import FileService
 from src.tasks.celery import celery_app
 
+logger = logging.getLogger(__name__)
 
 class PasteService:
     @classmethod
@@ -61,7 +63,8 @@ class PasteService:
 
         if paste.expire_at is not None:
             delete_paste.apply_async((paste.id,), eta=paste.expire_at)
-
+            logger.debug("Created at: %s, expire at: %s", paste.created_at, paste.expire_at)
+        
         return paste
 
     @classmethod
