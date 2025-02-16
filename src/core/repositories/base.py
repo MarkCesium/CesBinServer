@@ -1,4 +1,4 @@
-from sqlalchemy import Result, Select
+from sqlalchemy import Result, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import Session
 
@@ -12,11 +12,11 @@ class BaseRepository:
 
     @classmethod
     async def get_all(cls, session: AsyncSession, **filter_by):
-        return await session.scalars(Select(cls.model).filter_by(**filter_by))
+        return await session.scalars(select(cls.model).filter_by(**filter_by))
 
     @classmethod
     async def get_one_or_none(cls, session: AsyncSession, **filter_by):
-        query = Select(cls.model).filter_by(**filter_by)
+        query = select(cls.model).filter_by(**filter_by)
         result: Result = await session.execute(query)
         return result.scalar_one_or_none()
 
@@ -40,6 +40,6 @@ class BaseSyncRepository:
 
     @classmethod
     def get_one_or_none(cls, session: Session, **filter_by):
-        query = Select(cls.model).filter_by(**filter_by)
+        query = select(cls.model).filter_by(**filter_by)
         result: Result = session.execute(query)
         return result.scalar_one_or_none()
