@@ -4,11 +4,10 @@ from time import time
 
 from fastapi import status
 from fastapi.exceptions import HTTPException
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.core.config import BASE_DIR
 from src.core.db_helper import db_helper
-from src.core.models import Format, Paste, Period
+from src.core.models import Paste
 from src.core.repositories import (
     FormatRepository,
     PasteRepository,
@@ -21,60 +20,54 @@ from src.tasks.celery import celery_app
 logger = logging.getLogger(__name__)
 
 class PasteService:
-    @classmethod
+    def __init__(self, paste_repository: PasteRepository, format_repository: FormatRepository, period_repository: PeriodRepository):
+        self.paste_repository = paste_repository
+        self.format_repository = format_repository
+        self.period_repository = period_repository
+    
     async def create(
-        cls,
-        session: AsyncSession,
+        self,
         text: str,
         format_name: str,
         period_name: str | None = None,
     ) -> int:
-        paste = Paste()
-        paste.path = f"pastes/{time()*1000}.txt"
+        data = dict()
+        data["path"] = f"pastes/{time()*1000}.txt"
 
-        format: Format | None = await FormatRepository.get_one_or_none(
-            session, name=format_name
-        )
+        format = await self.format_repository.get_one_or_none(name=format_name)
         if format is None:
-            await session.close()
             raise HTTPException(status.HTTP_404_NOT_FOUND, "Format not found")
 
-        paste.format_id = format.id
-        paste.created_at = datetime.now(timezone.utc)
+        data["format_id"] = format.id
+        data["created_at"] = datetime.now(timezone.utc)
 
         try:
-            await FileService.create(str(BASE_DIR / paste.path), text)
-        except Exception:
-            await session.close()
+            await FileService.create(str(BASE_DIR / data["path"]), text)
+        except Exception as e:
+            logger.error(e)
             raise HTTPException(status.HTTP_400_BAD_REQUEST)
         
         if period_name is not None:
-            period: Period = await PeriodRepository.get_one_or_none(
-                session, name=period_name
-            )
+            period = await self.period_repository.get_one_or_none(name=period_name)
             if period is None:
-                await session.close()
                 raise HTTPException(status.HTTP_404_NOT_FOUND, "Period not found")
             
-            paste.expire_at = paste.created_at + period.duration
+            data["expire_at"] = data["created_at"] + period.duration
 
-        session.add(paste)
-        await session.commit()
-
+        paste = await self.paste_repository.create(**data)
         if paste.expire_at is not None:
             delete_paste.apply_async((paste.id,), eta=paste.expire_at)
             logger.debug("Created at: %s, expire at: %s", paste.created_at, paste.expire_at)
         
         return paste
 
-    @classmethod
-    async def get(cls, session: AsyncSession, id: int) -> str:
-        paste: Paste = await PasteRepository.get_by_id(session, id)
+    async def get(self, id: int) -> dict:
+        paste = await self.paste_repository.get_by_id(id)
         if paste is None:
             raise HTTPException(status.HTTP_404_NOT_FOUND)
 
-        text: str = await FileService.get(str(BASE_DIR / paste.path))
-        format: Format = await FormatRepository.get_by_id(session, paste.format_id)
+        text = await FileService.get(str(BASE_DIR / paste.path))
+        format = await self.format_repository.get_by_id(paste.format_id)
 
         return {
             "id": paste.id,
