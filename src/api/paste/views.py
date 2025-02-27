@@ -1,27 +1,31 @@
-from fastapi import APIRouter, Depends, status
-from sqlalchemy.ext.asyncio import AsyncSession
+import logging
+from typing import TYPE_CHECKING, Annotated
 
-from src.core.db_helper import db_helper
-from src.services import PasteService
+from fastapi import APIRouter, Depends, status
+
+from src.providers import get_paste_service
 
 from . import schemas
 
-router = APIRouter(prefix="/paste", tags=["Paste"])
+if TYPE_CHECKING:
+    from src.services import PasteService
 
+router = APIRouter(prefix="/paste", tags=["Paste"])
+logger = logging.getLogger(__name__)
 
 @router.get("/{id}", status_code=status.HTTP_200_OK)
 async def get_paste(
     id: int,
-    session: AsyncSession = Depends(db_helper.async_session_dependency),
+    paste_service: Annotated["PasteService", Depends(get_paste_service)],
 ) -> schemas.PasteRead:
-    return await PasteService.get(session, id)
+    return await paste_service.get(id)
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
 async def create_paste(
     paste: schemas.PasteCreate,
-    session: AsyncSession = Depends(db_helper.async_session_dependency),
+    paste_service: Annotated["PasteService", Depends(get_paste_service)],
 ) -> schemas.PasteRead:
-    paste = await PasteService.create(session, paste.text, paste.format, paste.period)
+    paste = await paste_service.create(paste.text, paste.format, paste.period)
 
-    return await PasteService.get(session, paste.id)
+    return await paste_service.get(paste.id)
