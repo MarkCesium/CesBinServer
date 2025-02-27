@@ -20,6 +20,7 @@ celery = "^5.4.0"
 uvicorn = "^0.32.1"
 pyamqp = "^0.1.0.7"
 psycopg = {extras = ["binary"], version = "^3.2.3"}
+orjson = "^3.10.15"
 
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.4.8"
